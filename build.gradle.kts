@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.support.isGradleKotlinDslJar
+
 val restdocsApiSpecVersion: String by extra { "0.19.4" }
 
 plugins {
@@ -73,11 +75,22 @@ tasks.withType<Test> {
 }
 
 openapi3 {
-    setServer("https://localhost:8081")
+    setServer("https://localhost:8080")
     title = "E-Commerce API"
     description = """
-                  | E-Commerce API
+                  | E-Commerce API 명세서입니다.
                   """.trimMargin()
     version = "1.0.0"
     format = "yaml"
+}
+
+tasks.register<Copy>("copyOpenApiSpec") {
+    delete("${layout.projectDirectory}/src/main/resources/static/swagger-ui/openapi3.yaml")
+    from("${layout.buildDirectory}/api-spec/openapi3.yaml")
+    into("${layout.projectDirectory}/src/main/resources/static/swagger-ui/.")
+    onlyIf { file("${layout.buildDirectory}/api-spec/openapi3.yaml").exists() }
+}
+
+tasks.named("build") {
+    finalizedBy("copyOpenApiSpec")
 }
